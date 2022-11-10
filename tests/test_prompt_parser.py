@@ -1,5 +1,5 @@
 import unittest
-
+from typing import List
 import pyparsing
 
 from ldm.invoke.prompt_parser import PromptParser, Blend, Conjunction, FlattenedPrompt, CrossAttentionControlSubstitute, \

@@ -1,5 +1,5 @@
 from enum import Enum
-
+from typing import List
 import torch
 
 # adapted from bloc97's CrossAttentionControl colab
