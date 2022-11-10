@@ -92,6 +92,7 @@ import copy
 import base64
 import functools
 import ldm.invoke.pngwriter
+from typing import List
 from ldm.invoke.prompt_parser import split_weighted_subprompts
 
 SAMPLER_CHOICES = [
@@ -873,7 +874,7 @@ class Args(object):
         special_effects_group.add_argument(
             '--seamless_axes',
             default=['x', 'y'],
-            type=list[str],
+            type=List[str],
             help='Specify which axes to use circular convolution on.',
         )
         variation_group.add_argument(
@@ -991,7 +992,7 @@ def metadata_dumps(opt,
     return metadata
 
 @functools.lru_cache(maxsize=50)
-def args_from_png(png_file_path) -> list[Args]:
+def args_from_png(png_file_path) -> List[Args]:
     '''
     Given the path to a PNG file created by invoke.py,
     retrieves a list of Args objects containing the image
@@ -1021,7 +1022,7 @@ def dream_cmd_from_png(png_file_path):
     opt = metadata_from_png(png_file_path)
     return opt.dream_prompt_str()
 
-def metadata_loads(metadata) -> list:
+def metadata_loads(metadata) -> List:
     '''
     Takes the dictionary corresponding to RFC266 (https://github.com/lstein/stable-diffusion/issues/266)
     and returns a series of opt objects for each of the images described in the dictionary. Note that this

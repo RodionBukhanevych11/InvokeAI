@@ -8,7 +8,7 @@ import torch
 class CrossAttentionControl:
 
     class Arguments:
-        def __init__(self, edited_conditioning: torch.Tensor, edit_opcodes: list[tuple], edit_options: dict):
+        def __init__(self, edited_conditioning: torch.Tensor, edit_opcodes: List[tuple], edit_options: dict):
             """
             :param edited_conditioning: if doing cross-attention control, the edited conditioning [1 x 77 x 768]
             :param edit_opcodes: if doing cross-attention control, a list of difflib.SequenceMatcher-like opcodes describing how to map original conditioning tokens to edited conditioning tokens (only the 'equal' opcode is required)
@@ -85,7 +85,7 @@ class CrossAttentionControl:
 
     @classmethod
     def get_active_cross_attention_control_types_for_step(cls, context: 'CrossAttentionControl.Context', percent_through:float=None)\
-            -> list['CrossAttentionControl.CrossAttentionType']:
+            -> List['CrossAttentionControl.CrossAttentionType']:
         """
         Should cross-attention control be applied on the given step?
         :param percent_through: How far through the step sequence are we (0.0=pure noise, 1.0=completely denoised image). Expected range 0.0..<1.0.

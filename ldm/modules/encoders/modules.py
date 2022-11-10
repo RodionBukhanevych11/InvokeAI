@@ -556,7 +556,7 @@ class WeightedFrozenCLIPEmbedder(FrozenCLIPEmbedder):
         else:
             return batch_z
 
-    def get_tokens(self, fragments: list[str], include_start_and_end_markers: bool = True) -> list[list[int]]:
+    def get_tokens(self, fragments: List[str], include_start_and_end_markers: bool = True) -> List[List[int]]:
         tokens = self.tokenizer(
             fragments,
             truncation=True,
@@ -572,7 +572,7 @@ class WeightedFrozenCLIPEmbedder(FrozenCLIPEmbedder):
 
 
     @classmethod
-    def apply_embedding_weights(self, embeddings: torch.Tensor, per_embedding_weights: list[float], normalize:bool) -> torch.Tensor:
+    def apply_embedding_weights(self, embeddings: torch.Tensor, per_embedding_weights: List[float], normalize:bool) -> torch.Tensor:
         per_embedding_weights = torch.tensor(per_embedding_weights, dtype=embeddings.dtype, device=embeddings.device)
         if normalize:
             per_embedding_weights = per_embedding_weights / torch.sum(per_embedding_weights)
@@ -582,7 +582,7 @@ class WeightedFrozenCLIPEmbedder(FrozenCLIPEmbedder):
         # lerped embeddings has shape (77, 768)
 
 
-    def get_tokens_and_weights(self, fragments: list[str], weights: list[float]) -> (torch.Tensor, torch.Tensor):
+    def get_tokens_and_weights(self, fragments: List[str], weights: List[float]) -> (torch.Tensor, torch.Tensor):
         '''
 
         :param fragments:

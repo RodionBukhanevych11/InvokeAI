@@ -13,11 +13,11 @@ def parse_prompt(prompt_string):
     #print(f"-> parsed '{prompt_string}' to {parse_result}")
     return parse_result
 
-def make_basic_conjunction(strings: list[str]):
+def make_basic_conjunction(strings: List[str]):
     fragments = [Fragment(x) for x in strings]
     return Conjunction([FlattenedPrompt(fragments)])
 
-def make_weighted_conjunction(weighted_strings: list[tuple[str,float]]):
+def make_weighted_conjunction(weighted_strings: List[tuple[str,float]]):
     fragments = [Fragment(x, w) for x,w in weighted_strings]
     return Conjunction([FlattenedPrompt(fragments)])
 
