@@ -4,11 +4,15 @@ import PIL
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-
+import os, cv2, json
 import random
 
-imagenet_templates_smallest = [
-    'a photo of a {}',
+training_templates_smallest = [
+    'photo of a sks {}',
+]
+
+reg_templates_smallest = [
+    'photo of a {}',
 ]
 
 imagenet_templates_small = [
@@ -39,6 +43,60 @@ imagenet_templates_small = [
     'a photo of the large {}',
     'a photo of a cool {}',
     'a photo of a small {}',
+    'an illustration of a {}',
+    'a rendering of a {}',
+    'a cropped photo of the {}',
+    'the photo of a {}',
+    'an illustration of a clean {}',
+    'an illustration of a dirty {}',
+    'a dark photo of the {}',
+    'an illustration of my {}',
+    'an illustration of the cool {}',
+    'a close-up photo of a {}',
+    'a bright photo of the {}',
+    'a cropped photo of a {}',
+    'an illustration of the {}',
+    'a good photo of the {}',
+    'an illustration of one {}',
+    'a close-up photo of the {}',
+    'a rendition of the {}',
+    'an illustration of the clean {}',
+    'a rendition of a {}',
+    'an illustration of a nice {}',
+    'a good photo of a {}',
+    'an illustration of the nice {}',
+    'an illustration of the small {}',
+    'an illustration of the weird {}',
+    'an illustration of the large {}',
+    'an illustration of a cool {}',
+    'an illustration of a small {}',
+    'a depiction of a {}',
+    'a rendering of a {}',
+    'a cropped photo of the {}',
+    'the photo of a {}',
+    'a depiction of a clean {}',
+    'a depiction of a dirty {}',
+    'a dark photo of the {}',
+    'a depiction of my {}',
+    'a depiction of the cool {}',
+    'a close-up photo of a {}',
+    'a bright photo of the {}',
+    'a cropped photo of a {}',
+    'a depiction of the {}',
+    'a good photo of the {}',
+    'a depiction of one {}',
+    'a close-up photo of the {}',
+    'a rendition of the {}',
+    'a depiction of the clean {}',
+    'a rendition of a {}',
+    'a depiction of a nice {}',
+    'a good photo of a {}',
+    'a depiction of the nice {}',
+    'a depiction of the small {}',
+    'a depiction of the weird {}',
+    'a depiction of the large {}',
+    'a depiction of a cool {}',
+    'a depiction of a small {}',
 ]
 
 imagenet_dual_templates_small = [
@@ -72,57 +130,38 @@ imagenet_dual_templates_small = [
 ]
 
 per_img_token_list = [
-    'א',
-    'ב',
-    'ג',
-    'ד',
-    'ה',
-    'ו',
-    'ז',
-    'ח',
-    'ט',
-    'י',
-    'כ',
-    'ל',
-    'מ',
-    'נ',
-    'ס',
-    'ע',
-    'פ',
-    'צ',
-    'ק',
-    'ר',
-    'ש',
-    'ת',
+    'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',
 ]
 
-
 class PersonalizedBase(Dataset):
-    def __init__(
-        self,
-        data_root,
-        size=None,
-        repeats=100,
-        interpolation='bicubic',
-        flip_p=0.5,
-        set='train',
-        placeholder_token='*',
-        per_image_tokens=False,
-        center_crop=False,
-        mixing_prob=0.25,
-        coarse_class_text=None,
-    ):
+    def __init__(self,
+                 data_root,
+                 size=None,
+                 repeats=100,
+                 interpolation="bicubic",
+                 flip_p=0.5,
+                 set="train",
+                 placeholder_token="dog",
+                 per_image_tokens=False,
+                 center_crop=False,
+                 mixing_prob=0.25,
+                 coarse_class_text=None,
+                 reg = True
+                 ):
 
-        self.data_root = data_root
-
-        self.image_paths = [
-            os.path.join(self.data_root, file_path)
-            for file_path in os.listdir(self.data_root) if file_path != ".DS_Store"
-        ]
+        if set == 'train':
+            self.ann_path = '/home/ubuntu/dataset_fire_detection/ann/fire/train.json'
+            self.images_path = '/home/ubuntu/dataset_fire_detection/images'
+        else:
+            self.ann_path = '/home/ubuntu/dataset_fire_detection/ann/fire/val.json'
+            self.images_path = '/home/ubuntu/dataset_fire_detection/images'
+            
+        with open(self.ann_path) as f:
+            self.ann = json.load(f)
 
         # self._length = len(self.image_paths)
-        self.num_images = len(self.image_paths)
-        self._length = self.num_images
+        self.num_images = len(self.ann['images'])
+        self._length = self.num_images 
 
         self.placeholder_token = placeholder_token
 
@@ -133,70 +172,78 @@ class PersonalizedBase(Dataset):
         self.coarse_class_text = coarse_class_text
 
         if per_image_tokens:
-            assert self.num_images < len(
-                per_img_token_list
-            ), f"Can't use per-image tokens when the training set contains more than {len(per_img_token_list)} tokens. To enable larger sets, add more tokens to 'per_img_token_list'."
+            assert self.num_images < len(per_img_token_list), f"Can't use per-image tokens when the training set contains more than {len(per_img_token_list)} tokens. To enable larger sets, add more tokens to 'per_img_token_list'."
 
-        if set == 'train':
-            self._length = self.num_images * repeats
+        if set == "train":
+            self._length = self.num_images
 
         self.size = size
-        self.interpolation = {
-            'linear': PIL.Image.LINEAR,
-            'bilinear': PIL.Image.BILINEAR,
-            'bicubic': PIL.Image.BICUBIC,
-            'lanczos': PIL.Image.LANCZOS,
-        }[interpolation]
+        self.interpolation = {"linear": PIL.Image.LINEAR,
+                              "bilinear": PIL.Image.BILINEAR,
+                              "bicubic": PIL.Image.BICUBIC,
+                              "lanczos": PIL.Image.LANCZOS,
+                              }[interpolation]
         self.flip = transforms.RandomHorizontalFlip(p=flip_p)
+        self.reg = reg
 
     def __len__(self):
         return self._length
 
     def __getitem__(self, i):
         example = {}
-        image = Image.open(self.image_paths[i % self.num_images])
-
-        if not image.mode == 'RGB':
-            image = image.convert('RGB')
-
+        
+        image = Image.open(os.path.join(self.images_path,self.ann['images'][i]['file_name']))
+        image_id = self.ann['images'][i]['id']
+        if not image.mode == "RGB":
+            image = image.convert("RGB")
+        image = np.array(image)
+        image_h, image_w = image.shape[:2]
+        for bbox_ann in self.ann['annotations']:
+            if bbox_ann['image_id'] == image_id:
+                bbox = bbox_ann['bbox']
+                bbox[3] = bbox[1]+bbox[3]
+                bbox[2] = bbox[0]+bbox[2]
+                try:
+                    bbox[0] -= image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
+                    bbox[0] = max(0,bbox[0])
+                except:
+                    ...
+                try:
+                    bbox[1] -= image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
+                    bbox[1] = max(0,bbox[1])
+                except:
+                    ...
+                try:
+                    bbox[2] += image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
+                    bbox[2] = min(image_w,bbox[2])
+                except:
+                    ...
+                try:
+                    bbox[3] += image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
+                    bbox[3] = min(image_h,bbox[3])
+                except:
+                    ...
+                break   
+        
         placeholder_string = self.placeholder_token
         if self.coarse_class_text:
-            placeholder_string = (
-                f'{self.coarse_class_text} {placeholder_string}'
-            )
+            placeholder_string = f"{self.coarse_class_text} {placeholder_string}"
 
-        if self.per_image_tokens and np.random.uniform() < self.mixing_prob:
-            text = random.choice(imagenet_dual_templates_small).format(
-                placeholder_string, per_img_token_list[i % self.num_images]
-            )
+        if not self.reg:
+            text = random.choice(training_templates_smallest).format(placeholder_string)
         else:
-            text = random.choice(imagenet_templates_small).format(
-                placeholder_string
-            )
-
-        example['caption'] = text
+            text = random.choice(reg_templates_smallest).format(placeholder_string)
+            
+        example["caption"] = 'fire industry'
 
         # default to score-sde preprocessing
         img = np.array(image).astype(np.uint8)
-
-        if self.center_crop:
-            crop = min(img.shape[0], img.shape[1])
-            h, w, = (
-                img.shape[0],
-                img.shape[1],
-            )
-            img = img[
-                (h - crop) // 2 : (h + crop) // 2,
-                (w - crop) // 2 : (w + crop) // 2,
-            ]
-
+        img = img[bbox[1]:bbox[3],bbox[0]:bbox[2]]
+        
         image = Image.fromarray(img)
         if self.size is not None:
-            image = image.resize(
-                (self.size, self.size), resample=self.interpolation
-            )
+            image = image.resize((self.size, self.size), resample=self.interpolation)
 
-        image = self.flip(image)
         image = np.array(image).astype(np.uint8)
-        example['image'] = (image / 127.5 - 1.0).astype(np.float32)
+        example["image"] = (image / 127.5 - 1.0).astype(np.float32)
         return example
