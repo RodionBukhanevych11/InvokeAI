@@ -203,27 +203,14 @@ class PersonalizedBase(Dataset):
                 bbox = bbox_ann['bbox']
                 bbox[3] = bbox[1]+bbox[3]
                 bbox[2] = bbox[0]+bbox[2]
-                try:
-                    bbox[0] -= image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
-                    bbox[0] = max(0,bbox[0])
-                except:
-                    ...
-                try:
-                    bbox[1] -= image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
-                    bbox[1] = max(0,bbox[1])
-                except:
-                    ...
-                try:
-                    bbox[2] += image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
-                    bbox[2] = min(image_w,bbox[2])
-                except:
-                    ...
-                try:
-                    bbox[3] += image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
-                    bbox[3] = min(image_h,bbox[3])
-                except:
-                    ...
-                break   
+                bbox[0] -= image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
+                bbox[0] = max(0,bbox[0])
+                bbox[1] -= image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
+                bbox[1] = max(0,bbox[1])
+                bbox[2] += image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
+                bbox[2] = min(image_w,bbox[2])
+                bbox[3] += image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
+                bbox[3] = min(image_h,bbox[3])
         
         placeholder_string = self.placeholder_token
         if self.coarse_class_text:
@@ -234,7 +221,7 @@ class PersonalizedBase(Dataset):
         else:
             text = random.choice(reg_templates_smallest).format(placeholder_string)
             
-        example["caption"] = 'fire industry'
+        example["caption"] = 'fire, flame, smoke, warning, alarm, factory, realistic, forest fire, house flame, details, flambe, bright lights, deadly fire, burns, photo of fire,  breaking news report, explosions, warm colors, smolder, smoke, 8k'
 
         # default to score-sde preprocessing
         img = np.array(image).astype(np.uint8)
