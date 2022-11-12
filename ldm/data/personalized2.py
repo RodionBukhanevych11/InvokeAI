@@ -7,6 +7,8 @@ from torchvision import transforms
 import os, cv2, json
 import random
 
+import warnings
+warnings.filterwarnings("ignore")
 
 training_templates_smallest = [
     'photo of a sks {}',
@@ -235,7 +237,6 @@ class PersonalizedBase(Dataset):
         if not image.mode == "RGB":
             image = image.convert("RGB")
         img = np.array(image).astype(np.uint8)
-        print(img.shape)
         image_h, image_w = img.shape[:2]
         if bboxes is not None:
             for bbox in bboxes:
