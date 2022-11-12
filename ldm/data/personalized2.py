@@ -251,7 +251,7 @@ class PersonalizedBase(Dataset):
             img = img[bbox[1]:bbox[3],bbox[0]:bbox[2]]
             
         
-        example["caption"] = self.prompt_dict.get(self.images_path.split('/')[-1], 
+        example["caption"] = self.prompt_dict.get(self.images_path[i].split('/')[-1], 
         'fire, flame, smoke, warning, alarm, factory, realistic, forest fire, house flame, details, flambe, bright lights, deadly fire, burns, photo of fire,  breaking news report, explosions, warm colors, smolder, smoke, 8 k'
         )
         
