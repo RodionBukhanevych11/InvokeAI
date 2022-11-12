@@ -226,28 +226,34 @@ class PersonalizedBase(Dataset):
         example = {}
         
         image = Image.open(os.path.join(self.images_root,self.images_path[i]))
-        mask = cv2.imread(os.path.join(self.masks_root,self.images_path[i].split('/')[-1][:-3]+'png'))[:,:,0]
+        try:
+            mask = cv2.imread(os.path.join(self.masks_root,self.images_path[i].split('/')[-1][:-3]+'png'))[:,:,0]
+            bboxes = torchvision.ops.masks_to_boxes(mask)
+        except:
+            bboxes = None
+            
         if not image.mode == "RGB":
             image = image.convert("RGB")
-        image = np.array(image)
-        bboxes = torchvision.ops.masks_to_boxes(mask)
-        image_h, image_w = image.shape[:2]
-        for bbox in bboxes:
-            bbox[0] -= image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
-            bbox[0] = max(0,bbox[0])
-            bbox[1] -= image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
-            bbox[1] = max(0,bbox[1])
-            bbox[2] += image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
-            bbox[2] = min(image_w,bbox[2])
-            bbox[3] += image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
-            bbox[3] = min(image_h,bbox[3])
-            break
-        
-        example["caption"] = self.prompt_dict[self.images_path.split('/')[-1]]
-
-        # default to score-sde preprocessing
         img = np.array(image).astype(np.uint8)
-        img = img[bbox[1]:bbox[3],bbox[0]:bbox[2]]
+        print(image.shape)
+        image_h, image_w = img.shape[:2]
+        if bboxes is not None:
+            for bbox in bboxes:
+                bbox[0] -= image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
+                bbox[0] = max(0,bbox[0])
+                bbox[1] -= image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
+                bbox[1] = max(0,bbox[1])
+                bbox[2] += image_w / (bbox[2] - bbox[0]) * (bbox[2] - bbox[0])
+                bbox[2] = min(image_w,bbox[2])
+                bbox[3] += image_h / (bbox[3] - bbox[1]) * (bbox[3] - bbox[1])
+                bbox[3] = min(image_h,bbox[3])
+                break
+            img = img[bbox[1]:bbox[3],bbox[0]:bbox[2]]
+            
+        
+        example["caption"] = self.prompt_dict.get(self.images_path.split('/')[-1], 
+        'fire, flame, smoke, warning, alarm, factory, realistic, forest fire, house flame, details, flambe, bright lights, deadly fire, burns, photo of fire,  breaking news report, explosions, warm colors, smolder, smoke, 8 k'
+        )
         
         image = Image.fromarray(img)
         if self.size is not None:
