@@ -226,7 +226,7 @@ class PersonalizedBase(Dataset):
         example = {}
         
         image = Image.open(os.path.join(self.images_root,self.images_path[i]))
-        mask = cv2.imread(os.path.join(self.masks_root,self.images_path[i].split('/')[-1][:-3]+'png'))
+        mask = cv2.imread(os.path.join(self.masks_root,self.images_path[i].split('/')[-1][:-3]+'png'))[:,:,0]
         if not image.mode == "RGB":
             image = image.convert("RGB")
         image = np.array(image)
