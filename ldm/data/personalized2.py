@@ -190,7 +190,7 @@ class PersonalizedBase(Dataset):
         if set == "train":
             self.images_path = self.images_path[:int(len(self.images_path)*0.75)]
         else:
-            self.images_path = images_path[int(len(self.images_path)*0.75):]
+            self.images_path = self.images_path[int(len(self.images_path)*0.75):]
             
         # self._length = len(self.image_paths)
         self.num_images = len(self.images_path)
@@ -235,7 +235,7 @@ class PersonalizedBase(Dataset):
         if not image.mode == "RGB":
             image = image.convert("RGB")
         img = np.array(image).astype(np.uint8)
-        print(image.shape)
+        print(img.shape)
         image_h, image_w = img.shape[:2]
         if bboxes is not None:
             for bbox in bboxes:
