@@ -185,7 +185,7 @@ class PersonalizedBase(Dataset):
         self.masks_root = '/home/ubuntu/masks_random_prompt_extended'
         self.images_path =  list(find_files(self.images_root, '*.jpg'))
         self.masks_path = list(find_files(self.images_root, '*.png'))
-        self.prompt_dict = read_csv_as_dict(['home/ubuntu/selected_images/logs_rand_prompt_extended.csv'])
+        self.prompt_dict = read_csv_as_dict(['/home/ubuntu/selected_images/logs_rand_prompt_extended.csv'])
         
         if set == "train":
             self.images_path = self.images_path[:int(len(self.images_path)*0.75)]
